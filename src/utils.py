@@ -1,10 +1,5 @@
 import evaluate
 import numpy as np
-from transformers import (AutoModelForSequenceClassification, 
-                        AutoTokenizer, TrainingArguments, 
-                        Trainer, pipeline,
-                        PrinterCallback
-                        )
 import torch
 
 
@@ -20,12 +15,8 @@ def tokenize_batch(batch, tokenizer, device):
     token = {k: v.to(device) for k,v in token.items()}
     return token
 
-
-
 def compute_metric(eval_pred, metric_name):
     metric = evaluate.load(metric_name)
     predictions, labels = eval_pred
     preds = np.argmax(predictions, axis=1)
     return metric.compute(predictions=preds, references=labels)
-
-
