@@ -6,10 +6,8 @@ from functools import partial
 
 def train_model(config):
     from ray.train.huggingface.transformers import prepare_trainer
-    import evaluate
-    import numpy as np
     from transformers import (AutoModelForSequenceClassification, 
-                            AutoTokenizer, TrainingArguments, 
+                            TrainingArguments, 
                             Trainer, pipeline,
                             PrinterCallback
                             )
