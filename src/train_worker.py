@@ -1,4 +1,3 @@
-
 from .data_loader import data_loader
 from utils import compute_metric
 from functools import partial
@@ -14,7 +13,6 @@ def train_model(config):
     import ray
     
     model_name = config.get("model_name")
-    device = config.get("device")
     batch_size = config.get("batch_size")
     metric_name = config.get("metric_name", "accuracy")
     epochs = config.get("epochs")
