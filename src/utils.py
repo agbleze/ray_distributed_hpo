@@ -1,6 +1,7 @@
 import evaluate
 import numpy as np
 import torch
+import yaml
 
 
 def tokenize_batch(batch, tokenizer, device):
@@ -20,3 +21,8 @@ def compute_metric(eval_pred, metric_name):
     predictions, labels = eval_pred
     preds = np.argmax(predictions, axis=1)
     return metric.compute(predictions=preds, references=labels)
+
+
+def load_config_file(config_path):
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
