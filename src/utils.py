@@ -25,4 +25,5 @@ def compute_metric(eval_pred, metric_name):
 
 def load_config_file(config_path):
     with open(config_path, "r") as f:
-        return yaml.safe_load(f)
+        config = yaml.safe_load(f)
+    return config
