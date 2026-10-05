@@ -3,6 +3,7 @@ from ray.train.huggingface.transformers import RayTrainReportCallback, prepare_t
 from ray.tune.schedulers import ASHAScheduler
 from ray.tune.search.optuna import OptunaSearch
 from ray.air.config import RunConfig
+import ray
 from utils import load_config_file
 import os
 
@@ -25,7 +26,7 @@ def main(config_path):
     config = load_config_file(config_path=config_path)
     infra_config = config.get("infrastructure")
     model_config = config.get("model")
-    storage_path = infra.get("storage_path") 
+    storage_path = infra_config.get("storage_path") 
     
     model_name = model_config.get("name")
     os.makedirs(storage_path, exist_ok=True)
