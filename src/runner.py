@@ -3,6 +3,7 @@ from ray.train.huggingface.transformers import RayTrainReportCallback, prepare_t
 from ray.tune.schedulers import ASHAScheduler
 from ray.tune.search.optuna import OptunaSearch
 from ray.air.config import RunConfig
+from transformers import AutoModelForSequenceClassification
 import ray
 from utils import load_config_file
 import os
@@ -27,9 +28,20 @@ def main(config_path):
     infra_config = config.get("infrastructure")
     model_config = config.get("model")
     storage_path = infra_config.get("storage_path") 
+    hpo_config = config.get("hpo_bounds")
+    #metric="loss", mode="min"
     
     model_name = model_config.get("name")
+    
+    num_labels = model_config.get("num_labels")
+    
     os.makedirs(storage_path, exist_ok=True)
+    
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, 
+                                                                use_safetensors=True,
+                                                                num_labels=num_labels
+                                                                )
+    
     print("Configuring scheduler")
     scheduler = ASHAScheduler(time_attr="training_iteration",
                               max_t=model_config.get("epochs"),
@@ -37,7 +49,7 @@ def main(config_path):
                               reduction_factor=2
                               )
     print("Configuring Tuner")
-    tuner = tune.Tuner(trainable=tune.with_resources(trainable=tune.with_parameters(train_model),
+    tuner = tune.Tuner(trainable=tune.with_resources(trainable=tune.with_parameters(model),
                                            resources={"cpu": infra_config.get("cpu"),
                                                       "gpu": infra_config.get("gpu")
                                                       }
