@@ -29,13 +29,18 @@ def main(config_path):
     model_config = config.get("model")
     storage_path = infra_config.get("storage_path") 
     hpo_config = config.get("hpo_bounds")
-    #metric="loss", mode="min"
+    temp_dir = infra_config.get("temp_dir")
+    directory_path = infra_config.get("directory_path")
     
     model_name = model_config.get("name")
-    
     num_labels = model_config.get("num_labels")
     
     os.makedirs(storage_path, exist_ok=True)
+    
+    ray.init(ignore_reinit_error=True,
+             _temp_dir=temp_dir,
+             _system_config={"object_spilling_config": '{"type": "filesystem", "params": {"directory_path": ["/mnt/d/ray_spill"]}}'},
+            )
     
     model = AutoModelForSequenceClassification.from_pretrained(model_name, 
                                                                 use_safetensors=True,
@@ -54,10 +59,10 @@ def main(config_path):
                                                       "gpu": infra_config.get("gpu")
                                                       }
                                            ),
-                       tune_config=tune.TuneConfig(metric="eval_loss",
-                                                   mode="min",
+                       tune_config=tune.TuneConfig(metric=hpo_config.get("metric"),
+                                                   mode=hpo_config.get("mode"),
                                                    scheduler=scheduler,
-                                                   num_samples=3,
+                                                   num_samples=hpo_config.get("num_samples"),
                                                    search_alg=optuna_search,
                                                    ),
                        run_config=RunConfig(name=f"{config.get('dataset_name')}_tune_demo",
@@ -69,24 +74,14 @@ def main(config_path):
     print(f"fitting tuner")
     results = tuner.fit()
     print(f"successfully fitted tuner")
-    best_result = results.get_best_result(metric="eval_loss", mode="min")
-    print(f"Best Validation loss: {best_result.metrics['eval_loss']}")
+    best_result = results.get_best_result(metric=hpo_config.get("metric"), mode=hpo_config.get("mode"))
+    print(f"Best Validation loss: {best_result.metrics[hpo_config.get("metric")]}")
     print(f"Best validation accuracy: {best_result.metrics['eval_accuracy']}")
-    
     return results, best_result
 
 
-# %%
-ray.init(
-    ignore_reinit_error=True,
-    _temp_dir="/tmp/ray_native",
-    # 2. OFFLOAD THE HEAVY WEIGHTS: Large arrays spill to your D: drive
-    _system_config={
-        "object_spilling_config": '{"type": "filesystem", "params": {"directory_path": ["/mnt/d/ray_spill"]}}'
-    },
-    
-)
-res = main(config)
+if __main__ == "__name__":
+    res = main(config)
 
 
 
