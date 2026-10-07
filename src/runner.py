@@ -8,20 +8,7 @@ import ray
 from utils import load_config_file
 import os
 
-config = {"batch_size": tune.choice([4,8,16]),
-          "learning_rate": tune.loguniform(1e-5, 1e-1),
-          "lr_scheduler_type": tune.choice(categories=["linear", "cosine", "constant", "constant_with_warmup"]),
-          "optim": tune.choice(categories=["adamw_torch", "sgd", "adafactor"]),
-          "weight_decay": tune.uniform(lower=0.01, upper=0.1),
-          "dataset_name": "legacy-datasets/banking77",
-          "model_name": "microsoft/deberta-v3-small",
-          "device": "cuda",
-          "epochs":1,
-          "cpu": 2,
-          "gpu": 0.33
-          }
 
-optuna_search = OptunaSearch(metric="loss", mode="min")
 #%%
 def main(config_path):
     config = load_config_file(config_path=config_path)
@@ -34,6 +21,9 @@ def main(config_path):
     
     model_name = model_config.get("name")
     num_labels = model_config.get("num_labels")
+    
+    optuna_search = OptunaSearch(metric="loss", mode="min")
+
     
     os.makedirs(storage_path, exist_ok=True)
     
@@ -80,8 +70,8 @@ def main(config_path):
     return results, best_result
 
 
-if __main__ == "__name__":
-    res = main(config)
 
+if __name__ == "__main__":
+    res = main(config_path)
 
 
