@@ -7,7 +7,12 @@ from transformers import AutoModelForSequenceClassification
 import ray
 from utils import load_config_file
 import os
+import argparse
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="HPO with ray")
+    
 
 #%%
 def main(config_path):
