@@ -12,10 +12,14 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HPO with ray")
+    parser.add_argument("--config_path", type=str, required=True, help='Path to the configuration file')
+    return parser.parse_args()
     
 
 #%%
-def main(config_path):
+def main():
+    args = parse_args()
+    config_path = args.config_path
     config = load_config_file(config_path=config_path)
     infra_config = config.get("infrastructure")
     model_config = config.get("model")
